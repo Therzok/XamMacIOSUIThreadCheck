@@ -123,7 +123,13 @@ namespace UIThreadCheck
                     case MonoCounterFlags.MONO_COUNTER_DOUBLE:
                         return MemoryMarshal.Read<double>(arr);
                     case MonoCounterFlags.MONO_COUNTER_STRING:
-                        return System.Text.Encoding.UTF8.GetString(arr);
+                        unsafe
+                        {
+                            fixed (byte* p = arr)
+                            {
+                                return Marshal.PtrToStringAuto((IntPtr)p, size);
+                            }
+                        }
                     case MonoCounterFlags.MONO_COUNTER_TIME_INTERVAL:
                         var ts = MemoryMarshal.Read<long>(arr);
                         return TimeSpan.FromMilliseconds(ts / 1000);
